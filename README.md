@@ -167,16 +167,22 @@ npm run dev
 
 ---
 
-## 🔨 Production Build
+## 🚀 Single-Platform Deployment (Render.com)
 
-To build the client application for production deployment:
+The entire full-stack application (Frontend + Express API + Socket.IO WebSockets) is configured to deploy together on **Render.com** under a single service and single URL:
 
-```bash
-cd client
-npm run build
-```
-
-This compiles optimized minified assets into `client/dist/`.
+1. **Connect GitHub Repo**: Sign in to [Render.com](https://render.com) and create a **New Web Service** connected to `https://github.com/nikhilk2151/-Art-Supply-Exchange`.
+2. **Build & Start Commands**:
+   - **Build Command**: `npm install && npm run build`
+   - **Start Command**: `npm start`
+3. **Environment Variables**:
+   - `NODE_ENV`: `production`
+   - `PORT`: `5000`
+   - `MONGO_URI`: *(Your MongoDB Atlas connection string)*
+   - `JWT_SECRET`: `art-supply-exchange-secret-key-2026`
+   - `CLOUDINARY_CLOUD_NAME`: `dcjhbeyvo`
+   - `CLOUDINARY_API_KEY`: `677256696187545`
+   - `CLOUDINARY_API_SECRET`: `6ukIKSSnRgRyXOIfj_gJAlOJtbU`
 
 ---
 
