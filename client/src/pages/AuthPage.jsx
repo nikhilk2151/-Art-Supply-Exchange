@@ -20,6 +20,10 @@ export default function AuthPage({ onLogin, api }) {
 
   const handleGoogleSignIn = async () => {
     setError('');
+    if (!auth) {
+      setError('Google sign-in is not initialized. Please verify your Firebase API key configuration.');
+      return;
+    }
 
     try {
       const provider = new GoogleAuthProvider();

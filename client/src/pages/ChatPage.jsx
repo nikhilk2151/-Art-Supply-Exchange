@@ -11,7 +11,8 @@ export default function ChatPage({ api, user, authHeader }) {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const instance = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000');
+    const socketTarget = import.meta.env.VITE_SOCKET_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5000');
+    const instance = io(socketTarget);
     setSocket(instance);
     return () => instance.disconnect();
   }, []);

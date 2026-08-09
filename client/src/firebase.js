@@ -1,15 +1,26 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyB3qSETjsWMEfyEih1k9m4H1d-u-q6hgPE',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'swap-279ed.firebaseapp.com',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'swap-279ed',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'swap-279ed.firebasestorage.app',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '405739911990',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:405739911990:web:cf8b773312585102385197'
 };
 
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+let app = null;
+let auth = null;
+
+try {
+  if (firebaseConfig.apiKey) {
+    app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+    auth = getAuth(app);
+  }
+} catch (err) {
+  console.warn('Firebase initialization notice:', err?.message || err);
+}
+
+export { auth };
 export default app;
