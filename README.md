@@ -167,22 +167,45 @@ npm run dev
 
 ---
 
-## 🚀 Single-Platform Deployment (Render.com)
+## 🚀 Single-Platform Deployment Guide (Render.com)
 
-The entire full-stack application (Frontend + Express API + Socket.IO WebSockets) is configured to deploy together on **Render.com** under a single service and single URL:
+The entire full-stack application (React 19 Frontend + Express REST API + Socket.IO WebSockets) is configured for unified deployment on **Render.com** under **1 single service and 1 website URL**:
 
-1. **Connect GitHub Repo**: Sign in to [Render.com](https://render.com) and create a **New Web Service** connected to `https://github.com/nikhilk2151/-Art-Supply-Exchange`.
-2. **Build & Start Commands**:
+### Step 1: Database Setup (MongoDB Atlas)
+1. Log in to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) and create a free **M0 Cluster**.
+2. Under **Network Access**, add IP `0.0.0.0/0` (allow access from anywhere).
+3. Under **Database Access**, create a user and password.
+4. Copy your MongoDB URI:  
+   `mongodb+srv://<username>:<password>@cluster...mongodb.net/art-supply-exchange?retryWrites=true&w=majority`
+
+### Step 2: Render.com Web Service Setup
+1. Log in to [Render.com](https://render.com) with your GitHub account.
+2. Click **New +** ➔ **Web Service**.
+3. Connect your repository: `https://github.com/nikhilk2151/-Art-Supply-Exchange`.
+4. Configure service settings:
+   - **Name**: `art-supply-exchange`
+   - **Environment**: `Node`
    - **Build Command**: `npm install && npm run build`
    - **Start Command**: `npm start`
-3. **Environment Variables**:
-   - `NODE_ENV`: `production`
-   - `PORT`: `5000`
-   - `MONGO_URI`: *(Your MongoDB Atlas connection string)*
-   - `JWT_SECRET`: `art-supply-exchange-secret-key-2026`
-   - `CLOUDINARY_CLOUD_NAME`: `dcjhbeyvo`
-   - `CLOUDINARY_API_KEY`: `677256696187545`
-   - `CLOUDINARY_API_SECRET`: `6ukIKSSnRgRyXOIfj_gJAlOJtbU`
+   - **Instance Type**: `Free`
+
+### Step 3: Configure Environment Variables on Render
+Add the following key-value pairs under the **Environment Variables** tab:
+
+| Variable | Value |
+| :--- | :--- |
+| `NODE_ENV` | `production` |
+| `PORT` | `5000` |
+| `USE_IN_MEMORY_DB` | `false` |
+| `MONGO_URI` | *(Your MongoDB Atlas connection URI)* |
+| `JWT_SECRET` | `art-supply-exchange-secret-key-2026` |
+| `JWT_EXPIRES_IN` | `7d` |
+| `CLOUDINARY_CLOUD_NAME` | `dcjhbeyvo` |
+| `CLOUDINARY_API_KEY` | `677256696187545` |
+| `CLOUDINARY_API_SECRET` | `6ukIKSSnRgRyXOIfj_gJAlOJtbU` |
+
+### Step 4: Deploy & Access Live Application
+Click **Create Web Service**. Render will automatically build the Vite client and start the Express server. Your full website will be live in 2-3 minutes at your Render URL (e.g., `https://art-supply-exchange.onrender.com`).
 
 ---
 
