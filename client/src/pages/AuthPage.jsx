@@ -1,11 +1,33 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { auth } from '../firebase';
 
 export default function AuthPage({ onLogin, api }) {
   const navigate = useNavigate();
   const [error, setError] = useState('');
+
+  // Handle redirect result if mobile browser uses redirect
+  useEffect(() => {
+    if (!auth) return;
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (result && result.user) {
+          const firebaseUser = result.user;
+          const { data } = await api.post('/auth/google', {
+            email: firebaseUser.email,
+            name: firebaseUser.displayName,
+            firebaseUid: firebaseUser.uid,
+            avatar: firebaseUser.photoURL || ''
+          });
+          onLogin(data.token, { ...data.user, firebaseUid: firebaseUser.uid });
+          navigate('/marketplace');
+        }
+      })
+      .catch((err) => {
+        console.warn('Redirect result notice:', err?.message);
+      });
+  }, [api, navigate, onLogin]);
 
   const handleQuickLogin = async (email, password = 'password123') => {
     setError('');
@@ -26,17 +48,44 @@ export default function AuthPage({ onLogin, api }) {
     }
 
     try {
+      await setPersistence(auth, browserLocalPersistence);
       const provider = new GoogleAuthProvider();
-      const userCredential = await signInWithPopup(auth, provider);
-      const firebaseUser = userCredential.user;
-      const { data } = await api.post('/auth/google', {
-        email: firebaseUser.email,
-        name: firebaseUser.displayName,
-        firebaseUid: firebaseUser.uid,
-        avatar: firebaseUser.photoURL || ''
-      });
-      onLogin(data.token, { ...data.user, firebaseUid: firebaseUser.uid });
-      navigate('/marketplace');
+      provider.setCustomParameters({ prompt: 'select_account' });
+
+      let userCredential = null;
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        try {
+          userCredential = await signInWithPopup(auth, provider);
+        } catch (popupErr) {
+          // If popup is blocked or IndexedDB connection closes on mobile, use redirect fallback
+          if (
+            popupErr?.code === 'auth/popup-blocked' ||
+            popupErr?.code === 'auth/popup-closed-by-user' ||
+            popupErr?.code === 'auth/internal-error' ||
+            (popupErr?.message && (popupErr.message.includes('closing') || popupErr.message.includes('hidden')))
+          ) {
+            await signInWithRedirect(auth, provider);
+            return;
+          }
+          throw popupErr;
+        }
+      } else {
+        userCredential = await signInWithPopup(auth, provider);
+      }
+
+      if (userCredential && userCredential.user) {
+        const firebaseUser = userCredential.user;
+        const { data } = await api.post('/auth/google', {
+          email: firebaseUser.email,
+          name: firebaseUser.displayName,
+          firebaseUid: firebaseUser.uid,
+          avatar: firebaseUser.photoURL || ''
+        });
+        onLogin(data.token, { ...data.user, firebaseUid: firebaseUser.uid });
+        navigate('/marketplace');
+      }
     } catch (err) {
       const message = err?.response?.data?.message || err?.message || 'Google sign-in failed';
       setError(message);

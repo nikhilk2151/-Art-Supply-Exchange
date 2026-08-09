@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyB3qSETjsWMEfyEih1k9m4H1d-u-q6hgPE',
@@ -17,6 +17,9 @@ try {
   if (firebaseConfig.apiKey) {
     app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
     auth = getAuth(app);
+    // Explicitly set persistence to browserLocalPersistence (localStorage)
+    // to prevent mobile browser IndexedDB "Database is closing/hidden" errors.
+    setPersistence(auth, browserLocalPersistence).catch(() => {});
   }
 } catch (err) {
   console.warn('Firebase initialization notice:', err?.message || err);
