@@ -207,6 +207,13 @@ Add the following key-value pairs under the **Environment Variables** tab:
 ### Step 4: Deploy & Access Live Application
 Click **Create Web Service**. Render will automatically build the Vite client and start the Express server. Your full website will be live in 2-3 minutes at your Render URL (e.g., `https://art-supply-exchange.onrender.com`).
 
+### Step 5: Authorize Domain in Firebase (for Google Sign-In)
+To enable Google Sign-In on your live Render domain:
+1. Open [Firebase Console](https://console.firebase.google.com).
+2. Select your project (`swap-279ed`).
+3. Click **Authentication** ➔ **Settings** tab ➔ **Authorized Domains**.
+4. Click **Add Domain** and add: `art-supply-exchange.onrender.com`.
+
 ---
 
 ## 📜 License
