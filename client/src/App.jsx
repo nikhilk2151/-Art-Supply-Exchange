@@ -432,7 +432,7 @@ function App() {
         {/* Dynamic Page Views */}
         <main className="flex-1">
           <Routes>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<HomePage api={api} />} />
             <Route path="/auth" element={<AuthPage onLogin={login} api={api} />} />
             <Route path="/dashboard" element={user ? <DashboardPage user={user} api={api} authHeader={authHeader} /> : <Navigate to="/auth" />} />
             <Route path="/marketplace" element={<MarketplacePage api={api} />} />

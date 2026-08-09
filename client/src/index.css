@@ -148,3 +148,30 @@ body {
   box-shadow: 0 10px 25px rgba(200, 90, 50, 0.4);
   background: linear-gradient(135deg, #d86b43 0%, #e5a93c 100%);
 }
+
+/* Hide scrollbar for horizontal category pills */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Flipkart Style Mobile Card Utility */
+.flipkart-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(220, 210, 200, 0.7);
+  box-shadow: 0 4px 15px -2px rgba(45, 35, 25, 0.04);
+  border-radius: 1rem;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.flipkart-card:hover, .flipkart-card:active {
+  transform: translateY(-2px);
+  border-color: rgba(200, 90, 50, 0.35);
+  box-shadow: 0 8px 24px -4px rgba(200, 90, 50, 0.14);
+}
+

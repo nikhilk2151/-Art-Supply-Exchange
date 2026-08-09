@@ -305,46 +305,53 @@ export default function DashboardPage({ user, api, authHeader }) {
         <div className="rounded-2xl border border-stone-300 bg-white p-4 shadow-sm"><p className="text-sm text-stone-500 font-medium">Active conversations</p><p className="mt-2 text-2xl font-semibold text-charcoal">{chatsCount}</p></div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
         {listings.map((listing) => (
-          <div key={listing._id} className="rounded-3xl border border-stone-300 bg-white p-4 shadow-sm">
-            {listing.images?.length > 0 ? (
-              <img src={listing.images[0]} alt={listing.title} className="mb-3 h-40 w-full rounded-2xl object-cover" />
-            ) : (
-              <div className="mb-3 flex h-40 items-center justify-center rounded-2xl bg-stone-100 text-sm text-stone-500">No image</div>
-            )}
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="rounded-full bg-stone-100 px-3 py-1 text-xs uppercase font-semibold text-stone-700">{listing.category}</span>
-                {(isDemoAccount || (listing.seller && (DEMO_EMAILS.includes((listing.seller.email || '').toLowerCase().trim()) || DEMO_NAMES.includes((listing.seller.name || '').toLowerCase().trim())))) && (
-                  <span className="rounded-full bg-amber-500/20 border border-amber-500/40 px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wider text-amber-900 shadow-2xs flex items-center gap-1">
-                    <span>⚡</span>
-                    <span>Demo Product</span>
-                  </span>
+          <div key={listing._id} className="flipkart-card overflow-hidden flex flex-col justify-between p-2.5 sm:p-4">
+            <div>
+              <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-stone-100 mb-2">
+                {listing.images?.length > 0 ? (
+                  <img src={listing.images[0]} alt={listing.title} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-xs text-stone-500">No image</div>
                 )}
+                <div className="absolute top-1.5 left-1.5 flex flex-col gap-1 items-start max-w-[85%]">
+                  <span className="rounded-md bg-stone-900/80 backdrop-blur-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white truncate max-w-full">
+                    {listing.category}
+                  </span>
+                  {(isDemoAccount || (listing.seller && (DEMO_EMAILS.includes((listing.seller.email || '').toLowerCase().trim()) || DEMO_NAMES.includes((listing.seller.name || '').toLowerCase().trim())))) && (
+                    <span className="rounded-md bg-amber-500/90 backdrop-blur-md px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wider text-stone-900 flex items-center gap-0.5 border border-amber-300">
+                      <span>⚡</span>
+                      <span>Demo</span>
+                    </span>
+                  )}
+                </div>
               </div>
-              <span className="text-sm font-bold text-charcoal">₹{listing.price}</span>
+
+              <div className="flex items-baseline justify-between gap-1">
+                <span className="text-sm sm:text-base font-extrabold text-terra-cotta">₹{listing.price}</span>
+                <span className="text-[10px] uppercase font-semibold text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded">{listing.listingType}</span>
+              </div>
+
+              <h3 className="mt-1 font-semibold text-xs sm:text-sm text-stone-900 line-clamp-2 leading-tight min-h-[2rem]">{listing.title}</h3>
+              {isAdmin && listing.seller?.name && (
+                <p className="mt-0.5 text-[10px] font-semibold text-amber-700 truncate">Listed by: {listing.seller.name}</p>
+              )}
             </div>
-            <h3 className="mt-3 font-semibold text-charcoal">{listing.title}</h3>
-            {isAdmin && listing.seller?.name && (
-              <p className="mt-1 text-xs font-semibold text-amber-700">Listed by: {listing.seller.name}</p>
-            )}
-            <p className="mt-2 text-sm text-stone-600 line-clamp-2">{listing.description}</p>
-            <div className="mt-4 flex flex-wrap items-center gap-2">
+
+            <div className="mt-3 pt-2 border-t border-stone-100 flex flex-wrap items-center gap-1.5">
               <button
-                className="rounded-full border border-stone-300 bg-stone-50 px-3.5 py-1 text-xs font-semibold text-charcoal hover:bg-stone-100 transition flex items-center gap-1"
+                className="flex-1 rounded-lg border border-stone-300 bg-stone-50 py-1 text-[11px] font-semibold text-stone-800 hover:bg-stone-100 transition flex items-center justify-center gap-1"
                 onClick={() => handleEditClick(listing)}
               >
-                <svg className="h-3.5 w-3.5 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
+                <span>✏️</span>
                 <span>Edit</span>
               </button>
-              <button className="rounded-full border border-stone-300 px-3 py-1 text-xs font-medium hover:bg-stone-50 transition" onClick={() => handleStatus(listing._id, 'sold')}>
+              <button className="rounded-lg border border-stone-300 px-2 py-1 text-[11px] font-medium text-stone-700 hover:bg-stone-50 transition" onClick={() => handleStatus(listing._id, 'sold')}>
                 {listing.status === 'sold' ? 'Sold' : 'Mark sold'}
               </button>
-              <button className="rounded-full border border-red-200 bg-red-50 text-red-700 px-3 py-1 text-xs font-medium hover:bg-red-100 transition" onClick={() => handleDelete(listing._id)}>
-                Delete
+              <button className="rounded-lg border border-red-200 bg-red-50 text-red-700 px-2 py-1 text-[11px] font-medium hover:bg-red-100 transition" onClick={() => handleDelete(listing._id)}>
+                🗑️
               </button>
             </div>
           </div>
