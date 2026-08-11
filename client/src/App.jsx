@@ -10,6 +10,7 @@ import ChatPage from './pages/ChatPage';
 import SwapPage from './pages/SwapPage';
 import AdminPage from './pages/AdminPage';
 import EditProfileModal from './components/EditProfileModal';
+import CustomizeProfilePage from './pages/CustomizeProfilePage';
 
 const api = axios.create({ baseURL: import.meta.env.VITE_API_URL || '/api' });
 
@@ -45,6 +46,13 @@ function App() {
         setLoadingAuth(false);
       });
   }, []);
+
+  // Redirect new user to profile customization if profile setup is not yet completed
+  useEffect(() => {
+    if (user && user.isProfileCompleted === false && location.pathname !== '/customize-profile' && location.pathname !== '/auth') {
+      navigate('/customize-profile');
+    }
+  }, [user, location.pathname, navigate]);
 
   useEffect(() => {
     if (!user) return;
@@ -434,13 +442,28 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage api={api} />} />
             <Route path="/auth" element={<AuthPage onLogin={login} api={api} />} />
+            <Route
+              path="/customize-profile"
+              element={
+                user ? (
+                  <CustomizeProfilePage
+                    user={user}
+                    api={api}
+                    authHeader={authHeader}
+                    onUpdateUser={(updatedUser) => setUser(updatedUser)}
+                  />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
+            />
             <Route path="/dashboard" element={user ? <DashboardPage user={user} api={api} authHeader={authHeader} /> : <Navigate to="/auth" />} />
             <Route path="/marketplace" element={<MarketplacePage api={api} />} />
             <Route path="/listing/:id" element={<ListingDetailPage api={api} user={user} authHeader={authHeader} />} />
             <Route path="/chat" element={user ? <ChatPage api={api} user={user} authHeader={authHeader} /> : <Navigate to="/auth" />} />
             <Route path="/swaps" element={user ? <SwapPage api={api} user={user} authHeader={authHeader} /> : <Navigate to="/auth" />} />
             <Route path="/admin" element={user?.role === 'admin' ? <AdminPage api={api} authHeader={authHeader} /> : <Navigate to="/dashboard" />} />
-            <Route path="*" element={<Navigate to={user ? '/marketplace' : '/'} />} />
+            <Route path="*" element={<Navigate to={user ? (user.isProfileCompleted === false ? '/customize-profile' : '/marketplace') : '/'} />} />
           </Routes>
         </main>
 

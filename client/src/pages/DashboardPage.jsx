@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 
 const emptyForm = {
   title: '',
@@ -18,6 +19,7 @@ export default function DashboardPage({ user, api, authHeader }) {
   const [pendingSwapsCount, setPendingSwapsCount] = useState(0);
   const [chatsCount, setChatsCount] = useState(0);
   const [showModal, setShowModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState({ isOpen: false, item: null, isDeleting: false });
   const [editingListing, setEditingListing] = useState(null);
   const [form, setForm] = useState({ ...emptyForm, city: user?.city || '', state: user?.state || '' });
   const [imageFiles, setImageFiles] = useState([]);
@@ -252,9 +254,8 @@ export default function DashboardPage({ user, api, authHeader }) {
     }
   };
 
-  const handleDelete = async (id) => {
-    const targetListing = listings.find((item) => item._id === id);
-    const sellerEmail = (targetListing?.seller?.email || '').toLowerCase().trim();
+  const requestDeleteListing = (listing) => {
+    const sellerEmail = (listing?.seller?.email || '').toLowerCase().trim();
     const isListingDemo = sellerEmail && DEMO_EMAILS.includes(sellerEmail);
 
     if ((isDemoAccount || isListingDemo) && !isAdmin) {
@@ -262,11 +263,23 @@ export default function DashboardPage({ user, api, authHeader }) {
       return;
     }
 
+    setDeleteTarget({
+      isOpen: true,
+      item: listing,
+      isDeleting: false
+    });
+  };
+
+  const confirmDeleteListing = async () => {
+    if (!deleteTarget.item) return;
+    setDeleteTarget((prev) => ({ ...prev, isDeleting: true }));
     try {
-      await api.delete(`/listings/${id}`, { headers: authHeader() });
+      await api.delete(`/listings/${deleteTarget.item._id}`, { headers: authHeader() });
       loadData();
+      setDeleteTarget({ isOpen: false, item: null, isDeleting: false });
     } catch (err) {
       alert(err?.response?.data?.message || 'Failed to delete listing');
+      setDeleteTarget((prev) => ({ ...prev, isDeleting: false }));
     }
   };
 
@@ -350,7 +363,7 @@ export default function DashboardPage({ user, api, authHeader }) {
               <button className="rounded-lg border border-stone-300 px-2 py-1 text-[11px] font-medium text-stone-700 hover:bg-stone-50 transition" onClick={() => handleStatus(listing._id, 'sold')}>
                 {listing.status === 'sold' ? 'Sold' : 'Mark sold'}
               </button>
-              <button className="rounded-lg border border-red-200 bg-red-50 text-red-700 px-2 py-1 text-[11px] font-medium hover:bg-red-100 transition" onClick={() => handleDelete(listing._id)}>
+              <button className="rounded-lg border border-red-200 bg-red-50 text-red-700 px-2 py-1 text-[11px] font-medium hover:bg-red-100 transition" onClick={() => requestDeleteListing(listing)}>
                 🗑️
               </button>
             </div>
@@ -586,6 +599,17 @@ export default function DashboardPage({ user, api, authHeader }) {
           </div>
         </div>
       )}
+
+      {/* Confirm Delete Modal */}
+      <ConfirmDeleteModal
+        isOpen={deleteTarget.isOpen}
+        title="Delete Listing?"
+        message={`Are you sure you want to delete listing "${deleteTarget.item?.title || 'this item'}"? This action cannot be undone.`}
+        confirmText="Yes, Delete Listing"
+        isDeleting={deleteTarget.isDeleting}
+        onConfirm={confirmDeleteListing}
+        onCancel={() => setDeleteTarget({ isOpen: false, item: null, isDeleting: false })}
+      />
     </div>
   );
 }

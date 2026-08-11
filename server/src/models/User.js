@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema({
   bio: String,
   role: { type: String, enum: ['user', 'admin'], default: 'user' },
   isBanned: { type: Boolean, default: false },
+  isProfileCompleted: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });
 

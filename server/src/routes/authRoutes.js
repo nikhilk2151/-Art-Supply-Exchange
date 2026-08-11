@@ -62,6 +62,7 @@ router.post('/register', async (req, res) => {
       city,
       state,
       avatar,
+      isProfileCompleted: false,
       role: ADMIN_EMAILS.includes(email) ? 'admin' : 'user'
     });
 
@@ -102,6 +103,9 @@ router.post('/login', async (req, res) => {
     const token = createToken(updatedUser);
     const safeUser = updatedUser.toObject();
     delete safeUser.password;
+    if (safeUser.isProfileCompleted === undefined) {
+      safeUser.isProfileCompleted = true;
+    }
     res.json({ token, user: safeUser });
   } catch (error) {
     res.status(500).json({ message: 'Login failed', error: error.message });
@@ -125,7 +129,9 @@ router.post('/google', async (req, res) => {
     const roleToAssign = isAdminEmail ? 'admin' : 'user';
 
     let user = await User.findOne({ email });
+    let isNew = false;
     if (!user) {
+      isNew = true;
       const randomPassword = Math.random().toString(36).slice(-16);
       const hashedPassword = await bcrypt.hash(randomPassword, 10);
       user = await User.create({
@@ -136,26 +142,37 @@ router.post('/google', async (req, res) => {
         city,
         state,
         avatar,
+        isProfileCompleted: false,
         role: roleToAssign
       });
     } else {
       user.role = roleToAssign;
       if (!user.firebaseUid) user.firebaseUid = firebaseUid;
       if (avatar && !user.avatar) user.avatar = avatar;
+      if (user.isProfileCompleted === undefined) {
+        user.isProfileCompleted = true;
+      }
       await user.save();
     }
 
     const token = createToken(user);
     const safeUser = user.toObject();
     delete safeUser.password;
-    res.json({ token, user: safeUser });
+    if (safeUser.isProfileCompleted === undefined) {
+      safeUser.isProfileCompleted = !isNew;
+    }
+    res.json({ token, user: safeUser, isNewUser: isNew });
   } catch (error) {
     res.status(500).json({ message: 'Google authentication failed', error: error.message });
   }
 });
 
 router.get('/me', protect, async (req, res) => {
-  res.json({ user: req.user });
+  const safeUser = req.user.toObject ? req.user.toObject() : { ...req.user };
+  if (safeUser.isProfileCompleted === undefined) {
+    safeUser.isProfileCompleted = true;
+  }
+  res.json({ user: safeUser });
 });
 
 router.put('/profile', protect, async (req, res) => {
@@ -163,6 +180,8 @@ router.put('/profile', protect, async (req, res) => {
     const updates = { ...req.body };
     delete updates.email;
     delete updates.password;
+
+    updates.isProfileCompleted = true;
 
     if (updates.avatar && typeof updates.avatar === 'string' && updates.avatar.startsWith('data:image')) {
       const uploadedUrl = await uploadImageToCloudinary(updates.avatar);
@@ -172,7 +191,9 @@ router.put('/profile', protect, async (req, res) => {
     }
 
     const user = await User.findByIdAndUpdate(req.user._id, updates, { returnDocument: 'after' }).select('-password');
-    res.json({ user });
+    const safeUser = user.toObject();
+    safeUser.isProfileCompleted = true;
+    res.json({ user: safeUser });
   } catch (error) {
     res.status(500).json({ message: 'Profile update failed', error: error.message });
   }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 
 export default function ListingDetailPage({ api, user, authHeader }) {
   const { id } = useParams();
@@ -15,6 +16,7 @@ export default function ListingDetailPage({ api, user, authHeader }) {
   const [isResizing, setIsResizing] = useState(false);
   const [isSavingImage, setIsSavingImage] = useState(false);
   const [imageModalMessage, setImageModalMessage] = useState(null);
+  const [deleteImageIndex, setDeleteImageIndex] = useState(null);
 
   const loadListing = async () => {
     try {
@@ -431,7 +433,7 @@ export default function ListingDetailPage({ api, user, authHeader }) {
                         <img src={img} alt={`Item Preview ${index + 1}`} className="h-20 w-full object-cover" />
                         <button
                           type="button"
-                          onClick={() => handleRemoveImage(index)}
+                          onClick={() => setDeleteImageIndex(index)}
                           className="absolute top-1 right-1 bg-rose-600 text-white rounded-full p-1 text-xs shadow-md hover:bg-rose-700 transition"
                           title="Remove photo"
                         >
@@ -474,6 +476,20 @@ export default function ListingDetailPage({ api, user, authHeader }) {
           </div>
         </div>
       )}
+
+      <ConfirmDeleteModal
+        isOpen={deleteImageIndex !== null}
+        title="Remove Item Photo?"
+        message="Are you sure you want to remove this photo from your listing?"
+        confirmText="Yes, Remove Photo"
+        onConfirm={() => {
+          if (deleteImageIndex !== null) {
+            handleRemoveImage(deleteImageIndex);
+            setDeleteImageIndex(null);
+          }
+        }}
+        onCancel={() => setDeleteImageIndex(null)}
+      />
     </div>
   );
 }

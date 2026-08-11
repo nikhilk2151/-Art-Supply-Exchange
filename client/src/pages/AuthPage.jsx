@@ -6,6 +6,7 @@ import { auth } from '../firebase';
 export default function AuthPage({ onLogin, api }) {
   const navigate = useNavigate();
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   // Handle redirect result if mobile browser uses redirect
   useEffect(() => {
@@ -21,7 +22,11 @@ export default function AuthPage({ onLogin, api }) {
             avatar: firebaseUser.photoURL || ''
           });
           onLogin(data.token, { ...data.user, firebaseUid: firebaseUser.uid });
-          navigate('/marketplace');
+          if (!data.user.isProfileCompleted) {
+            navigate('/customize-profile');
+          } else {
+            navigate('/marketplace');
+          }
         }
       })
       .catch((err) => {
@@ -29,21 +34,13 @@ export default function AuthPage({ onLogin, api }) {
       });
   }, [api, navigate, onLogin]);
 
-  const handleQuickLogin = async (email, password = 'password123') => {
-    setError('');
-    try {
-      const { data } = await api.post('/auth/login', { email, password });
-      onLogin(data.token, data.user);
-      navigate('/marketplace');
-    } catch (err) {
-      setError(err?.response?.data?.message || 'Quick login failed');
-    }
-  };
-
   const handleGoogleSignIn = async () => {
     setError('');
+    setLoading(true);
+
     if (!auth) {
       setError('Google sign-in is not initialized. Please verify your Firebase API key configuration.');
+      setLoading(false);
       return;
     }
 
@@ -59,7 +56,6 @@ export default function AuthPage({ onLogin, api }) {
         try {
           userCredential = await signInWithPopup(auth, provider);
         } catch (popupErr) {
-          // If popup is blocked or IndexedDB connection closes on mobile, use redirect fallback
           if (
             popupErr?.code === 'auth/popup-blocked' ||
             popupErr?.code === 'auth/popup-closed-by-user' ||
@@ -84,73 +80,95 @@ export default function AuthPage({ onLogin, api }) {
           avatar: firebaseUser.photoURL || ''
         });
         onLogin(data.token, { ...data.user, firebaseUid: firebaseUser.uid });
-        navigate('/marketplace');
+        if (!data.user.isProfileCompleted) {
+          navigate('/customize-profile');
+        } else {
+          navigate('/marketplace');
+        }
       }
     } catch (err) {
       const message = err?.response?.data?.message || err?.message || 'Google sign-in failed';
       setError(message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="mx-auto flex min-h-[80vh] max-w-4xl items-center justify-center px-4 py-12">
-      <div className="grid w-full overflow-hidden rounded-3xl border border-stone-300 bg-white shadow-xl lg:grid-cols-2">
-        <div className="bg-terra-cotta p-8 text-white flex flex-col justify-between">
-          <div>
-            <span className="inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-amber-100 mb-3">
-              Official Platform
+    <div className="mx-auto flex min-h-[85vh] max-w-4xl items-center justify-center px-4 py-10">
+      <div className="grid w-full overflow-hidden rounded-3xl border border-stone-300 bg-white shadow-2xl lg:grid-cols-2">
+        {/* Left Side Banner */}
+        <div className="bg-gradient-to-br from-terra-cotta via-amber-700 to-amber-800 p-8 sm:p-10 text-white flex flex-col justify-between relative overflow-hidden">
+          <div className="relative z-10 space-y-4">
+            <span className="inline-block rounded-full bg-white/20 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-amber-100 shadow-xs">
+              🎨 Official Platform
             </span>
-            <h1 className="font-serif text-3xl font-bold">Art Supply Exchange</h1>
-            <p className="mt-4 text-sm leading-7 text-stone-100">
-              Trade spare supplies, save money, and keep art materials in circulation with nearby artists, students, and studios.
+            <h1 className="font-serif text-3xl sm:text-4xl font-bold leading-tight">Art Supply Exchange</h1>
+            <p className="text-sm leading-relaxed text-amber-50/90 font-medium">
+              Trade spare art supplies, save money, and keep high-quality art materials circulating among nearby artists and studios.
             </p>
           </div>
 
-          {/* Demo Personas section hidden (code retained, hidden from login page UI) */}
-          {/*
-          <div className="mt-8 rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
-            <p className="text-xs font-semibold uppercase tracking-wider text-amber-200">Demo Personas</p>
-            <p className="mt-1 text-xs text-stone-200">Click any account to test instantly:</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button onClick={() => handleQuickLogin('asha@example.com')} className="rounded-lg bg-white/20 px-3 py-1.5 text-xs font-medium hover:bg-white/30 transition">
-                Asha Menon (Mumbai)
-              </button>
-              <button onClick={() => handleQuickLogin('rohan@example.com')} className="rounded-lg bg-white/20 px-3 py-1.5 text-xs font-medium hover:bg-white/30 transition">
-                Rohan Sharma (Delhi)
-              </button>
-            </div>
+          <div className="relative z-10 mt-8 rounded-2xl bg-black/20 p-4 border border-white/20 backdrop-blur-md space-y-2">
+            <p className="text-xs font-bold uppercase tracking-wider text-amber-200">✨ Fast & Secure Access</p>
+            <ul className="text-xs space-y-1.5 text-stone-100 font-medium">
+              <li>✓ One-click sign in with Google</li>
+              <li>✓ First-time profile customization setup</li>
+              <li>✓ Swap, buy, and message local creators</li>
+            </ul>
           </div>
-          */}
         </div>
 
-        <div className="p-8 flex flex-col justify-center items-center text-center">
-          <div className="w-full max-w-sm">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-terra-cotta/10 text-terra-cotta">
-              <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457-.312-2.841-.873-4.084" />
-              </svg>
+        {/* Right Side Form (Only Google Sign-in) */}
+        <div className="p-8 sm:p-12 flex flex-col justify-center items-center text-center bg-stone-50/50">
+          <div className="w-full max-w-sm space-y-6">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-terra-cotta/15 text-terra-cotta text-3xl font-bold shadow-xs">
+              🎨
             </div>
-            <h2 className="font-serif text-2xl font-bold text-charcoal">Art Supply Exchange</h2>
-            <p className="mt-2 text-sm text-stone-600">
-              Sign in or create your account using your Google account to get started.
+
+            <div className="space-y-2">
+              <h2 className="font-serif text-2xl font-bold text-stone-900">Sign Up / Sign In</h2>
+              <p className="text-xs text-stone-500 font-medium leading-relaxed">
+                Continue with your Google account to create your artist profile and access the marketplace.
+              </p>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2 text-left">
+                <span>⚠️</span>
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Google Sign-in Button */}
+            <button
+              type="button"
+              disabled={loading}
+              onClick={handleGoogleSignIn}
+              className="w-full flex items-center justify-center gap-3.5 rounded-2xl border border-stone-300 bg-white px-5 py-4 text-sm font-bold text-stone-800 shadow-md hover:bg-stone-50 hover:border-stone-400 hover:shadow-lg transition disabled:opacity-50 cursor-pointer"
+            >
+              {loading ? (
+                <>
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-terra-cotta border-t-transparent" />
+                  <span>Connecting to Google...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="h-6 w-6" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                  </svg>
+                  <span>Continue with Google</span>
+                </>
+              )}
+            </button>
+
+            <p className="text-[11px] text-stone-400 font-medium leading-relaxed">
+              By continuing, your profile picture and name will be imported from Google to help initialize your account.
             </p>
-
-            <div className="mt-8">
-              <button
-                className="w-full flex items-center justify-center gap-3 rounded-2xl border border-stone-300 bg-white px-5 py-3.5 text-sm font-semibold text-charcoal shadow-sm hover:bg-stone-50 hover:border-stone-400 transition"
-                onClick={handleGoogleSignIn}
-              >
-                <svg className="h-5 w-5" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                </svg>
-                <span>Continue with Google</span>
-              </button>
-            </div>
-
-            {error && <p className="mt-4 text-sm text-red-600 font-medium">{error}</p>}
           </div>
         </div>
       </div>
