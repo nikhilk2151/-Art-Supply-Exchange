@@ -200,9 +200,9 @@ Add the following key-value pairs under the **Environment Variables** tab:
 | `MONGO_URI` | *(Your MongoDB Atlas connection URI)* |
 | `JWT_SECRET` | `art-supply-exchange-secret-key-2026` |
 | `JWT_EXPIRES_IN` | `7d` |
-| `CLOUDINARY_CLOUD_NAME` | `dcjhbeyvo` |
-| `CLOUDINARY_API_KEY` | `677256696187545` |
-| `CLOUDINARY_API_SECRET` | `6ukIKSSnRgRyXOIfj_gJAlOJtbU` |
+| `CLOUDINARY_CLOUD_NAME` | `jebhdbewhbd` |
+| `CLOUDINARY_API_KEY` | `nbdhewbjhbhew` |
+| `CLOUDINARY_API_SECRET` | `bvegbejdbhbdhed` |
 
 ### Step 4: Deploy & Access Live Application
 Click **Create Web Service**. Render will automatically build the Vite client and start the Express server. Your full website will be live in 2-3 minutes at your Render URL (e.g., `https://art-supply-exchange.onrender.com`).
