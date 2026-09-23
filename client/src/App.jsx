@@ -11,6 +11,7 @@ import SwapPage from './pages/SwapPage';
 import AdminPage from './pages/AdminPage';
 import EditProfileModal from './components/EditProfileModal';
 import CustomizeProfilePage from './pages/CustomizeProfilePage';
+import TestAccountSwitcherModal from './components/TestAccountSwitcherModal';
 
 const api = axios.create({ baseURL: import.meta.env.VITE_API_URL || '/api' });
 
@@ -18,6 +19,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+  const [showTestSwitcherModal, setShowTestSwitcherModal] = useState(false);
   const [newBuyNotification, setNewBuyNotification] = useState(null);
   const [seenBuyIds, setSeenBuyIds] = useState(new Set());
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
@@ -306,6 +308,15 @@ function App() {
                       </button>
 
                       <button
+                        onClick={() => setShowTestSwitcherModal(true)}
+                        className="flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs font-bold text-amber-900 hover:bg-amber-100 transition shadow-2xs cursor-pointer"
+                        title="Quick switch between dummy testing accounts"
+                      >
+                        <span>⚡</span>
+                        <span className="hidden xl:inline">Test Accounts</span>
+                      </button>
+
+                      <button
                         onClick={logout}
                         className="rounded-xl border border-terra-cotta/30 bg-terra-cotta/10 px-3 py-1.5 text-xs font-semibold text-terra-cotta hover:bg-terra-cotta hover:text-white transition"
                       >
@@ -317,7 +328,14 @@ function App() {
                   <div className="flex items-center gap-2 pl-2">
                     <Link
                       to="/auth"
-                      className="px-3.5 py-2 rounded-xl text-stone-700 hover:bg-stone-200/50 hover:text-terra-cotta transition"
+                      className="flex items-center gap-1.5 rounded-xl bg-amber-100 text-amber-900 border border-amber-300 px-3 py-1.5 text-xs font-bold hover:bg-amber-200 transition shadow-2xs"
+                    >
+                      <span>⚡</span>
+                      <span>Test Accounts</span>
+                    </Link>
+                    <Link
+                      to="/auth"
+                      className="px-3.5 py-2 rounded-xl text-stone-700 hover:bg-stone-200/50 hover:text-terra-cotta transition text-xs sm:text-sm font-semibold"
                     >
                       Login
                     </Link>
@@ -388,39 +406,58 @@ function App() {
                         ⚡ Admin Panel
                       </Link>
                     )}
-                    <div className="mt-2 pt-2 border-t border-stone-200 flex items-center justify-between px-2">
+                    <div className="mt-2 pt-2 border-t border-stone-200 flex flex-col gap-2 px-2">
                       <button
                         onClick={() => {
                           setIsMobileMenuOpen(false);
-                          setShowEditProfileModal(true);
+                          setShowTestSwitcherModal(true);
                         }}
-                        className="flex items-center gap-2 text-xs font-bold text-stone-800 hover:text-terra-cotta"
+                        className="w-full flex items-center justify-center gap-2 rounded-xl bg-amber-100 border border-amber-300 py-2 text-xs font-bold text-amber-900 hover:bg-amber-200 transition"
                       >
-                        {user.avatar ? (
-                          <img src={user.avatar} alt={user.name} className="h-7 w-7 rounded-full object-cover border border-terra-cotta" />
-                        ) : (
-                          <div className="h-7 w-7 rounded-full bg-terra-cotta text-white flex items-center justify-center text-xs font-bold">
-                            {(user.name || 'U').charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                        <span>✏️ Edit Profile ({user.name})</span>
+                        <span>⚡</span>
+                        <span>Switch Dummy Test Account</span>
                       </button>
-                      <button
-                        onClick={() => {
-                          setIsMobileMenuOpen(false);
-                          logout();
-                        }}
-                        className="rounded-xl border border-terra-cotta/30 bg-terra-cotta/10 px-3 py-1.5 text-xs font-semibold text-terra-cotta hover:bg-terra-cotta hover:text-white transition"
-                      >
-                        Logout
-                      </button>
+                      <div className="flex items-center justify-between">
+                        <button
+                          onClick={() => {
+                            setIsMobileMenuOpen(false);
+                            setShowEditProfileModal(true);
+                          }}
+                          className="flex items-center gap-2 text-xs font-bold text-stone-800 hover:text-terra-cotta"
+                        >
+                          {user.avatar ? (
+                            <img src={user.avatar} alt={user.name} className="h-7 w-7 rounded-full object-cover border border-terra-cotta" />
+                          ) : (
+                            <div className="h-7 w-7 rounded-full bg-terra-cotta text-white flex items-center justify-center text-xs font-bold">
+                              {(user.name || 'U').charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <span>✏️ Profile ({user.name})</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setIsMobileMenuOpen(false);
+                            logout();
+                          }}
+                          className="rounded-xl border border-terra-cotta/30 bg-terra-cotta/10 px-3 py-1.5 text-xs font-semibold text-terra-cotta hover:bg-terra-cotta hover:text-white transition"
+                        >
+                          Logout
+                        </button>
+                      </div>
                     </div>
                   </>
                 ) : (
                   <div className="flex flex-col gap-2 pt-2 border-t border-stone-200">
                     <Link
                       to="/auth"
-                      className="w-full text-center px-4 py-2.5 rounded-xl text-stone-700 bg-stone-100 hover:bg-stone-200 font-semibold"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-amber-900 bg-amber-100 border border-amber-300 font-bold text-xs"
+                    >
+                      <span>⚡</span>
+                      <span>1-Click Test Accounts</span>
+                    </Link>
+                    <Link
+                      to="/auth"
+                      className="w-full text-center px-4 py-2.5 rounded-xl text-stone-700 bg-stone-100 hover:bg-stone-200 font-semibold text-xs"
                     >
                       Login
                     </Link>
@@ -475,6 +512,19 @@ function App() {
             authHeader={authHeader}
             onUpdateUser={(updatedUser) => setUser(updatedUser)}
             onClose={() => setShowEditProfileModal(false)}
+          />
+        )}
+
+        {/* Dummy Test Accounts Quick Switcher Modal */}
+        {showTestSwitcherModal && (
+          <TestAccountSwitcherModal
+            isOpen={showTestSwitcherModal}
+            onClose={() => setShowTestSwitcherModal(false)}
+            currentUser={user}
+            onSwitchUser={(token, u) => {
+              login(token, u);
+            }}
+            api={api}
           />
         )}
 

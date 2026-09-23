@@ -82,16 +82,12 @@ const PORT = process.env.PORT || 5000;
 
 connectDatabase()
   .then(async () => {
+    // Ensure dummy accounts and test data are verified and available on startup
+    await runSeed();
     const userCount = await User.countDocuments();
     const listingCount = await Listing.countDocuments();
-
-    if (userCount === 0 && listingCount === 0) {
-      console.log('Database empty. Running initial seed...');
-      await runSeed();
-    } else {
-      console.log(`Loaded persistent database (${userCount} users, ${listingCount} listings).`);
-      await cleanDatabaseBloat();
-    }
+    console.log(`Loaded database (${userCount} users, ${listingCount} listings).`);
+    await cleanDatabaseBloat();
 
     // Automated 48-Hour Chat Purge
     await autoCleanupOldChats();

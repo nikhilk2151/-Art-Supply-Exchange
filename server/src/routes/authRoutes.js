@@ -10,7 +10,11 @@ const router = express.Router();
 
 const createToken = (user) => jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'dev-secret', { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
 
-const ADMIN_EMAILS = ['artsupplyexchange2026@gmail.com', 'nikhilk21518@gmail.com'];
+const ADMIN_EMAILS = [
+  'artsupplyexchange2026@gmail.com',
+  'nikhilk21518@gmail.com',
+  'admin@example.com'
+];
 
 const checkAndApplyAdminRole = async (user) => {
   if (!user || !user.email) return user;
@@ -23,6 +27,43 @@ const checkAndApplyAdminRole = async (user) => {
   }
   return user;
 };
+
+// GET /api/auth/dummy-accounts - Fetch test accounts for easy testing & preview
+router.get('/dummy-accounts', async (_req, res) => {
+  try {
+    const dummyEmails = [
+      'admin@example.com',
+      'artsupplyexchange2026@gmail.com',
+      'asha@example.com',
+      'rohan@example.com',
+      'meera@example.com',
+      'karan@example.com',
+      'nisha@example.com',
+      'vikram@example.com',
+      'priya@example.com',
+      'arjun@example.com'
+    ];
+
+    const users = await User.find({ email: { $in: dummyEmails } })
+      .select('name email role city state avatar bio');
+
+    const formatted = users.map((u) => ({
+      _id: u._id,
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      city: u.city,
+      state: u.state,
+      avatar: u.avatar,
+      bio: u.bio,
+      defaultPassword: 'password123'
+    }));
+
+    res.json({ accounts: formatted });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to load dummy accounts', error: error.message });
+  }
+});
 
 router.post('/register', async (req, res) => {
   try {
